@@ -3,6 +3,9 @@ using TimeTrackingWebAPI.Models;
 
 namespace TimeTrackingWebAPI
 {
+    /// <summary>
+    /// Контекст базы данных для учета рабочего времени
+    /// </summary>
     public class TimeTrackingDbContext : DbContext
     {
         public TimeTrackingDbContext(DbContextOptions<TimeTrackingDbContext> options)

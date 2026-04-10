@@ -1,5 +1,8 @@
 ﻿namespace TimeTrackingWebAPI.DTO
 {
+    /// <summary>
+    /// Ответ по проводке
+    /// </summary>
     public class TimeEntryResponseDto
     {
         public int Id { get; set; }

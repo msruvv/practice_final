@@ -1,5 +1,8 @@
 ﻿namespace TimeTrackingWebAPI.DTO
 {
+    /// <summary>
+    /// Отчет за день со стикером
+    /// </summary>
     public class TimeEntryReportDto
     {
         public DateTime Date { get; set; }

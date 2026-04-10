@@ -3,6 +3,9 @@ using TimeTrackingWebAPI.DTO;
 
 namespace TimeTrackingWebAPI.Controllers
 {
+    /// <summary>
+    /// Управление отчетами
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ReportsController : ControllerBase
@@ -15,11 +18,14 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Отчет за день с дневной нормой
+        /// Показывает отчет за день с дневной нормой
         /// </summary>
+        /// <param name="date">Дата отчета</param>
+        /// <returns>Отчет со стикером</returns>
         [HttpGet("day")]
         public IActionResult GetDayReport([FromQuery] DateTime date)
         {
+            // Проверка на дневную норму
             var entries = _repository.GetTimeEntries(date, date.AddDays(1), null);
             var totalHours = entries.Sum(e => e.Hours);
 
@@ -29,19 +35,19 @@ namespace TimeTrackingWebAPI.Controllers
             {
                 status = "under";
                 stickerColor = "yellow";
-                message = $"Внесено недостаточно часов (необходимо 8, внесено {totalHours})";
+                message = $"Внесено недостаточно часов";
             }
             else if (totalHours == 8)
             {
                 status = "normal";
                 stickerColor = "green";
-                message = $"Норма часов выполнена! (8 часов)";
+                message = $"Норма часов выполнена!";
             }
             else
             {
                 status = "over";
                 stickerColor = "red";
-                message = $"Переработка! (внесено {totalHours} часов)";
+                message = $"Переработка!";
             }
 
             var report = new TimeEntryReportDto
@@ -76,8 +82,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Отчет за неделю - список проводок
+        /// Возвращает список проводок за неделю
         /// </summary>
+        /// <param name="date">Дата в неделе</param>
+        /// <returns>Список проводок</returns>
         [HttpGet("week")]
         public IActionResult GetWeekReport([FromQuery] DateTime date)
         {
@@ -111,8 +119,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Отчет за месяц - список проводок
+        /// Возвращает список проводок за месяц
         /// </summary>
+        /// <param name="year">Год</param>
+        /// <param name="month">Месяц</param>
+        /// <returns>Список проводок</returns>
         [HttpGet("month")]
         public IActionResult GetMonthReport([FromQuery] int year, [FromQuery] int month)
         {

@@ -2,6 +2,9 @@
 
 namespace TimeTrackingWebAPI.DTO
 {
+    /// <summary>
+    /// Запрос на создание проводки
+    /// </summary>
     public class TimeEntryRequestDto
     {
         [Required]

@@ -4,6 +4,9 @@ using TimeTrackingWebAPI.Models;
 
 namespace TimeTrackingWebAPI.Controllers
 {
+    /// <summary>
+    /// Управление задачами проекта
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController : ControllerBase
@@ -15,6 +18,12 @@ namespace TimeTrackingWebAPI.Controllers
             _repository = repository;
         }
 
+        /// <summary>
+        /// Показывает список всех задач
+        /// </summary>
+        /// <param name="projectId">ID проекта</param>
+        /// <param name="includeInactive">Включать неактивные</param>
+        /// <returns>Список задач</returns>
         [HttpGet]
         public IEnumerable<TaskResponseDto> GetTasks([FromQuery] int? projectId = null, [FromQuery] bool includeInactive = false)
         {
@@ -34,6 +43,11 @@ namespace TimeTrackingWebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Показывает задачу по ID
+        /// </summary>
+        /// <param name="id">ID задачи</param>
+        /// <returns>Данные задачи</returns>
         [HttpGet("{id}", Name = "GetTask")]
         public IActionResult GetTask(int id)
         {
@@ -58,6 +72,11 @@ namespace TimeTrackingWebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Создает новую задачу
+        /// </summary>
+        /// <param name="taskDto">Данные задачи</param>
+        /// <returns>Созданная задача</returns>
         [HttpPost]
         public IActionResult CreateTask([FromBody] TaskRequestDto taskDto)
         {
@@ -92,6 +111,12 @@ namespace TimeTrackingWebAPI.Controllers
             return CreatedAtRoute("GetTask", new { id = task.Id }, task);
         }
 
+        /// <summary>
+        /// Обновляет задачу
+        /// </summary>
+        /// <param name="id">ID задачи</param>
+        /// <param name="taskDto">Новые данные задачи</param>
+        /// <returns>Результат обновления</returns>
         [HttpPut("{id}")]
         public IActionResult UpdateTask(int id, [FromBody] TaskRequestDto taskDto)
         {
@@ -129,6 +154,11 @@ namespace TimeTrackingWebAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Удаляет задачу
+        /// </summary>
+        /// <param name="id">ID задачи</param>
+        /// <returns>Результат удаления</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteTask(int id)
         {

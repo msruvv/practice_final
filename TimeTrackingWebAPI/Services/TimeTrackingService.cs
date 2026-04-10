@@ -16,9 +16,13 @@ namespace TimeTrackingWebAPI.Services
         /// <summary>
         /// Проверяет, не превысит ли добавление/обновление проводки лимит в 24 часа за день
         /// </summary>
+        /// <param name="taskId">ID задачи</param>
+        /// <param name="date">Дата проводки</param>
+        /// <param name="hours">Количество часов</param>
+        /// <param name="excludeEntryId">ID проводки для исключения</param>
+        /// <returns>True - лимит не превышен, False - лимит будет превышен</returns>
         public async Task<bool> ValidateDailyHoursLimitAsync(int taskId, DateTime date, decimal hours, int? excludeEntryId = null)
         {
-            // Получаем все проводки за указанную дату, исключая текущую (при обновлении)
             var query = _context.TimeEntries
                 .Where(te => te.Date.Date == date.Date);
 
@@ -29,13 +33,14 @@ namespace TimeTrackingWebAPI.Services
 
             var existingTotal = await query.SumAsync(te => te.Hours);
 
-            // Проверяем, не превысит ли общая сумма 24 часа
             return existingTotal + hours <= 24;
         }
 
         /// <summary>
         /// Проверяет, можно ли редактировать задачу в проводке
         /// </summary>
+        /// <param name="timeEntryId">ID проводки</param>
+        /// <returns>True - можно редактировать, False - нельзя</returns>
         public async Task<bool> CanEditTaskInTimeEntryAsync(int timeEntryId)
         {
             var timeEntry = await _context.TimeEntries
@@ -43,15 +48,18 @@ namespace TimeTrackingWebAPI.Services
                 .FirstOrDefaultAsync(te => te.Id == timeEntryId);
 
             if (timeEntry == null || timeEntry.Task == null)
+            {
                 return false;
+            }
 
-            // Задачу можно редактировать только если она активна
             return timeEntry.Task.IsActive;
         }
 
         /// <summary>
-        /// Получить отчет за конкретный день с визуализацией
+        /// Возвращает отчет за день с визуализацией
         /// </summary>
+        /// <param name="date">Дата отчета</param>
+        /// <returns>Отчет с суммой часов и цветом стикера</returns>
         public async Task<TimeEntryReportDto> GetReportForDayAsync(DateTime date)
         {
             var entries = await _context.TimeEntries
@@ -62,8 +70,16 @@ namespace TimeTrackingWebAPI.Services
                 .ToListAsync();
 
             var totalHours = entries.Sum(e => e.Hours);
-            var status = totalHours < 8 ? "under" : (totalHours == 8 ? "normal" : "over");
-            var stickerColor = totalHours < 8 ? "yellow" : (totalHours == 8 ? "green" : "red");
+            var status = totalHours < 8
+                ? "under"
+                : (totalHours == 8
+                    ? "normal"
+                    : "over");
+            var stickerColor = totalHours < 8
+                ? "yellow"
+                : (totalHours == 8
+                    ? "green"
+                    : "red");
 
             return new TimeEntryReportDto
             {
@@ -76,9 +92,11 @@ namespace TimeTrackingWebAPI.Services
         }
 
         /// <summary>
-        /// Получить отчет за неделю (день недели из выбранной даты)
+        /// Возвращает список проводок за неделю
         /// </summary>
-        public async Task<TimeEntryReportDto> GetReportForWeekAsync(DateTime date)
+        /// <param name="date">Любая дата в неделе</param>
+        /// <returns>Список проводок за неделю</returns>
+        public async Task<List<TimeEntryResponseDto>> GetReportForWeekAsync(DateTime date)
         {
             var startOfWeek = date.Date.AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
             var endOfWeek = startOfWeek.AddDays(7);
@@ -90,25 +108,16 @@ namespace TimeTrackingWebAPI.Services
                 .OrderBy(te => te.Date)
                 .ToListAsync();
 
-            var totalHours = entries.Sum(e => e.Hours);
-            var avgDailyHours = totalHours / 7;
-            var status = avgDailyHours < 8 ? "under" : (avgDailyHours == 8 ? "normal" : "over");
-            var stickerColor = avgDailyHours < 8 ? "yellow" : (avgDailyHours == 8 ? "green" : "red");
-
-            return new TimeEntryReportDto
-            {
-                Date = date,
-                TotalHours = totalHours,
-                Status = status,
-                StickerColor = stickerColor,
-                Entries = entries.Select(MapToResponseDto).ToList()
-            };
+            return entries.Select(MapToResponseDto).ToList();
         }
 
         /// <summary>
-        /// Получить отчет за месяц
+        /// Возвращает список проводок за месяц
         /// </summary>
-        public async Task<TimeEntryReportDto> GetReportForMonthAsync(int year, int month)
+        /// <param name="year">Год</param>
+        /// <param name="month">Месяц</param>
+        /// <returns>Список проводок за месяц</returns>
+        public async Task<List<TimeEntryResponseDto>> GetReportForMonthAsync(int year, int month)
         {
             var startDate = new DateTime(year, month, 1);
             var endDate = startDate.AddMonths(1);
@@ -120,20 +129,7 @@ namespace TimeTrackingWebAPI.Services
                 .OrderBy(te => te.Date)
                 .ToListAsync();
 
-            var totalHours = entries.Sum(e => e.Hours);
-            var workingDays = DateTime.DaysInMonth(year, month);
-            var avgDailyHours = totalHours / workingDays;
-            var status = avgDailyHours < 8 ? "under" : (avgDailyHours == 8 ? "normal" : "over");
-            var stickerColor = avgDailyHours < 8 ? "yellow" : (avgDailyHours == 8 ? "green" : "red");
-
-            return new TimeEntryReportDto
-            {
-                Date = startDate,
-                TotalHours = totalHours,
-                Status = status,
-                StickerColor = stickerColor,
-                Entries = entries.Select(MapToResponseDto).ToList()
-            };
+            return entries.Select(MapToResponseDto).ToList();
         }
 
         private TimeEntryResponseDto MapToResponseDto(TimeEntry entry)

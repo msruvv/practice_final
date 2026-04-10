@@ -2,6 +2,9 @@
 
 namespace TimeTrackingWebAPI.DTO
 {
+    /// <summary>
+    /// DTO для создания и обновления проекта
+    /// </summary>
     public class ProjectRequestDto
     {
         [Required]

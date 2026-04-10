@@ -2,6 +2,9 @@
 
 namespace TimeTrackingWebAPI.DTO
 {
+    /// <summary>
+    /// Запрос на создание/обновление задачи
+    /// </summary>
     public class TaskRequestDto
     {
         [Required]

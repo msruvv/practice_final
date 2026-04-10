@@ -2,6 +2,9 @@
 
 namespace TimeTrackingWebAPI.Services
 {
+    /// <summary>
+    /// Сервис для работы с учетом рабочего времени
+    /// </summary>
     public interface ITimeTrackingService
     {
         // Методы для проверки бизнес правил
@@ -10,7 +13,7 @@ namespace TimeTrackingWebAPI.Services
 
         // Методы для отчетов
         Task<TimeEntryReportDto> GetReportForDayAsync(DateTime date);
-        Task<TimeEntryReportDto> GetReportForWeekAsync(DateTime date);
-        Task<TimeEntryReportDto> GetReportForMonthAsync(int year, int month);
+        Task<List<TimeEntryResponseDto>> GetReportForWeekAsync(DateTime date);
+        Task<List<TimeEntryResponseDto>> GetReportForMonthAsync(int year, int month);
     }
 }

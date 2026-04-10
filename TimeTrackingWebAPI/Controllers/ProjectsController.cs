@@ -4,6 +4,9 @@ using TimeTrackingWebAPI.Models;
 
 namespace TimeTrackingWebAPI.Controllers
 {
+    /// <summary>
+    /// Управление проектами
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ProjectsController : ControllerBase
@@ -15,6 +18,11 @@ namespace TimeTrackingWebAPI.Controllers
             _repository = repository;
         }
 
+        /// <summary>
+        /// Возвращает список всех проектов
+        /// </summary>
+        /// <param name="includeInactive">Включать неактивные</param>
+        /// <returns>Список проектов</returns>
         [HttpGet]
         public IEnumerable<ProjectResponseDto> GetProjects([FromQuery] bool includeInactive = false)
         {
@@ -30,6 +38,11 @@ namespace TimeTrackingWebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Получает проект по ID
+        /// </summary>
+        /// <param name="id">ID проекта</param>
+        /// <returns>Данные проекта</returns>
         [HttpGet("{id}", Name = "GetProject")]
         public IActionResult GetProject(int id)
         {
@@ -48,6 +61,11 @@ namespace TimeTrackingWebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Создает новый проект
+        /// </summary>
+        /// <param name="projectDto">Данные проекта</param>
+        /// <returns>Созданный проект</returns>
         [HttpPost]
         public IActionResult CreateProject([FromBody] ProjectRequestDto projectDto)
         {
@@ -71,6 +89,12 @@ namespace TimeTrackingWebAPI.Controllers
             return CreatedAtRoute("GetProject", new { id = project.Id }, project);
         }
 
+        /// <summary>
+        /// Обновляет проект
+        /// </summary>
+        /// <param name="id">ID проекта</param>
+        /// <param name="projectDto">Новые данные проекта</param>
+        /// <returns>Результат обновления</returns>
         [HttpPut("{id}")]
         public IActionResult UpdateProject(int id, [FromBody] ProjectRequestDto projectDto)
         {
@@ -95,13 +119,17 @@ namespace TimeTrackingWebAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Удаляет проект
+        /// </summary>
+        /// <param name="id">ID проекта</param>
+        /// <returns>Результат удаления</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteProject(int id)
         {
-            // Проверка: есть ли активные задачи у проекта
-            //var tasks = _repository.GetTasks(id, true);
-            //if (tasks.Any(t => t.IsActive))
-            //    return BadRequest("Нельзя удалить проект с активными задачами");
+            var tasks = _repository.GetTasks(id, true);
+            if (tasks.Any(t => t.IsActive))
+                return BadRequest("Нельзя удалить проект с активными задачами");
 
             var deletedProject = _repository.DeleteProject(id);
 
