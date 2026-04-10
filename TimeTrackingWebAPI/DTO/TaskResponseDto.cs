@@ -7,6 +7,6 @@
         public int ProjectId { get; set; }
         public string ProjectName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
-        //public decimal TotalHoursSpent { get; set; }
+        public decimal TotalHoursSpent { get; set; }
     }
 }
