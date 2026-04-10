@@ -10,5 +10,7 @@
         public decimal Hours { get; set; }
         public string Description { get; set; } = string.Empty;
         public int TaskId { get; set; }
+
+        public virtual Task? Task { get; set; }
     }
 }

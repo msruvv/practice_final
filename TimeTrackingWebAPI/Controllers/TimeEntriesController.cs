@@ -101,7 +101,7 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateTimeEntry(int id, [FromBody] TimeEntryRequestDto entryDto)
+        public IActionResult UpdateTimeEntry(int id, [FromBody] TimeEntryUpdateDto entryDto)
         {
             if (entryDto == null)
                 return BadRequest();
