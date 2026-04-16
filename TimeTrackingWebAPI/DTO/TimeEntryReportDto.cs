@@ -1,4 +1,6 @@
-﻿namespace TimeTrackingWebAPI.DTO
+﻿using TimeTrackingWebAPI.Models.Enums;
+
+namespace TimeTrackingWebAPI.DTO
 {
     /// <summary>
     /// Отчет за день со стикером
@@ -16,14 +18,14 @@
         public decimal TotalHours { get; set; }
 
         /// <summary>
-        /// Статус: under, normal, over
+        /// Статус
         /// </summary>
-        public string Status { get; set; } = string.Empty;
+        public ReportStatus Status { get; set; }
 
         /// <summary>
-        /// Цвет стикера: yellow, green, red
+        /// Цвет стикера
         /// </summary>
-        public string StickerColor { get; set; } = string.Empty;
+        public StickerColor StickerColor { get; set; }
 
         /// <summary>
         /// Сообщение для пользователя

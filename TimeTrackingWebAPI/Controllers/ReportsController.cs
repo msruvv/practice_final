@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTrackingWebAPI.DTO;
+using TimeTrackingWebAPI.Models.Enums;
 using TimeTrackingWebAPI.Repositories;
 
 namespace TimeTrackingWebAPI.Controllers
@@ -89,24 +90,26 @@ namespace TimeTrackingWebAPI.Controllers
                 .GetTimeEntries(date, date.AddDays(1), null);
             var totalHours = entries.Sum(e => e.Hours);
 
-            string status, stickerColor, message;
+            string message;
+            ReportStatus status;
+            StickerColor stickerColor;
 
             if (totalHours < DailyNormHours)
             {
-                status = "under";
-                stickerColor = "yellow";
+                status = ReportStatus.Under;
+                stickerColor = StickerColor.Yellow;
                 message = "Внесено недостаточно часов";
             }
             else if (totalHours == DailyNormHours)
             {
-                status = "normal";
-                stickerColor = "green";
+                status = ReportStatus.Normal;
+                stickerColor = StickerColor.Green;
                 message = "Норма часов выполнена!";
             }
             else
             {
-                status = "over";
-                stickerColor = "red";
+                status = ReportStatus.Over;
+                stickerColor = StickerColor.Red;
                 message = "Переработка!";
             }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimeTrackingWebAPI.DTO;
 using TimeTrackingWebAPI.Models;
+using TimeTrackingWebAPI.Models.Enums;
 
 namespace TimeTrackingWebAPI.Services
 {
@@ -102,15 +103,15 @@ namespace TimeTrackingWebAPI.Services
 
             var totalHours = entries.Sum(e => e.Hours);
             var status = totalHours < DailyNormHours
-                ? "under"
+                ? ReportStatus.Under
                 : (totalHours == DailyNormHours
-                    ? "normal"
-                    : "over");
+                    ? ReportStatus.Normal
+                    : ReportStatus.Over);
             var stickerColor = totalHours < DailyNormHours
-                ? "yellow"
+                ? StickerColor.Yellow
                 : (totalHours == DailyNormHours
-                    ? "green"
-                    : "red");
+                    ? StickerColor.Green
+                    : StickerColor.Red);
 
             return new TimeEntryReportDto
             {
