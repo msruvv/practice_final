@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+п»їusing Microsoft.EntityFrameworkCore;
 using TimeTrackingWebAPI;
+using TimeTrackingWebAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,12 +9,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Настройка DbContext
+// РќР°СЃС‚СЂРѕР№РєР° DbContext
 builder.Services.AddDbContext<TimeTrackingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Регистрация репозитория
-builder.Services.AddTransient<ITimeTrackingRepository, EFTimeTrackingRepository>();
+// Р РµРіРёСЃС‚СЂР°С†РёСЏ СЂРµРїРѕР·РёС‚РѕСЂРёРµРІ
+builder.Services.AddScoped<IProjectRepository, EFProjectRepository>();
+builder.Services.AddScoped<ITaskRepository, EFTaskRepository>();
+builder.Services.AddScoped<ITimeEntryRepository, EFTimeEntryRepository>();
 
 var app = builder.Build();
 

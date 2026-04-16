@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTrackingWebAPI.DTO;
 using TimeTrackingWebAPI.Models;
+using TimeTrackingWebAPI.Repositories;
 
 namespace TimeTrackingWebAPI.Controllers
 {
@@ -11,11 +12,27 @@ namespace TimeTrackingWebAPI.Controllers
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-        private readonly ITimeTrackingRepository _repository;
+        /// <summary>
+        /// Репозиторий для работы с задачами
+        /// </summary>
+        private readonly ITaskRepository _taskRepository;
 
-        public ProjectsController(ITimeTrackingRepository repository)
+        /// <summary>
+        /// Репозиторий для работы с проектами
+        /// </summary>
+        private readonly IProjectRepository _projectRepository;
+
+        /// <summary>
+        /// Конструктор контроллера проектов
+        /// </summary>
+        /// <param name="taskRepository">Репозиторий задач</param>
+        /// <param name="projectRepository">Репозиторий проектов</param>
+        public ProjectsController(
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository)
         {
-            _repository = repository;
+            _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
         }
 
         /// <summary>
@@ -24,9 +41,10 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="includeInactive">Включать неактивные</param>
         /// <returns>Список проектов</returns>
         [HttpGet]
-        public IEnumerable<ProjectResponseDto> GetProjects([FromQuery] bool includeInactive = false)
+        public IEnumerable<ProjectResponseDto> GetProjects(
+            [FromQuery] bool includeInactive = false)
         {
-            var projects = _repository.GetProjects(includeInactive);
+            var projects = _projectRepository.GetProjects(includeInactive);
 
             return projects.Select(p => new ProjectResponseDto
             {
@@ -34,7 +52,7 @@ namespace TimeTrackingWebAPI.Controllers
                 Name = p.Name,
                 Code = p.Code,
                 IsActive = p.IsActive,
-                TasksCount = 3
+                TasksCount = _taskRepository.GetTasks(p.Id, true).Count()
             });
         }
 
@@ -46,7 +64,7 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpGet("{id}", Name = "GetProject")]
         public IActionResult GetProject(int id)
         {
-            var project = _repository.GetProjectById(id);
+            var project = _projectRepository.GetProjectById(id);
 
             if (project == null)
                 return NotFound();
@@ -57,7 +75,7 @@ namespace TimeTrackingWebAPI.Controllers
                 Name = project.Name,
                 Code = project.Code,
                 IsActive = project.IsActive,
-                TasksCount = 3
+                TasksCount = _taskRepository.GetTasks(project.Id, true).Count()
             });
         }
 
@@ -67,15 +85,17 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="projectDto">Данные проекта</param>
         /// <returns>Созданный проект</returns>
         [HttpPost]
-        public IActionResult CreateProject([FromBody] ProjectRequestDto projectDto)
+        public IActionResult CreateProject(
+            [FromBody] ProjectRequestDto projectDto)
         {
             if (projectDto == null)
                 return BadRequest();
 
             // Проверка уникальности кода
-            var existingProjects = _repository.GetProjects(true);
+            var existingProjects = _projectRepository.GetProjects(true);
             if (existingProjects.Any(p => p.Code == projectDto.Code))
-                return BadRequest($"Проект с кодом '{projectDto.Code}' уже существует");
+                return BadRequest(
+                    $"Проект с кодом '{projectDto.Code}' уже существует");
 
             var project = new Project
             {
@@ -84,9 +104,10 @@ namespace TimeTrackingWebAPI.Controllers
                 IsActive = projectDto.IsActive
             };
 
-            _repository.CreateProject(project);
+            _projectRepository.CreateProject(project);
 
-            return CreatedAtRoute("GetProject", new { id = project.Id }, project);
+            return CreatedAtRoute("GetProject",
+                new { id = project.Id }, project);
         }
 
         /// <summary>
@@ -96,25 +117,27 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="projectDto">Новые данные проекта</param>
         /// <returns>Результат обновления</returns>
         [HttpPut("{id}")]
-        public IActionResult UpdateProject(int id, [FromBody] ProjectRequestDto projectDto)
+        public IActionResult UpdateProject(int id, 
+            [FromBody] ProjectRequestDto projectDto)
         {
             if (projectDto == null)
                 return BadRequest();
 
-            var existingProject = _repository.GetProjectById(id);
+            var existingProject = _projectRepository.GetProjectById(id);
             if (existingProject == null)
                 return NotFound();
 
             // Проверка уникальности кода
-            var allProjects = _repository.GetProjects(true);
+            var allProjects = _projectRepository.GetProjects(true);
             if (allProjects.Any(p => p.Code == projectDto.Code && p.Id != id))
-                return BadRequest($"Проект с кодом '{projectDto.Code}' уже существует");
+                return BadRequest(
+                    $"Проект с кодом '{projectDto.Code}' уже существует");
 
             existingProject.Name = projectDto.Name;
             existingProject.Code = projectDto.Code;
             existingProject.IsActive = projectDto.IsActive;
 
-            _repository.UpdateProject(existingProject);
+            _projectRepository.UpdateProject(existingProject);
 
             return NoContent();
         }
@@ -127,11 +150,12 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteProject(int id)
         {
-            var tasks = _repository.GetTasks(id, true);
+            var tasks = _taskRepository.GetTasks(id, true);
             if (tasks.Any(t => t.IsActive))
-                return BadRequest("Нельзя удалить проект с активными задачами");
+                return BadRequest(
+                    "Нельзя удалить проект с активными задачами");
 
-            var deletedProject = _repository.DeleteProject(id);
+            var deletedProject = _projectRepository.DeleteProject(id);
 
             if (deletedProject == null)
                 return NotFound();

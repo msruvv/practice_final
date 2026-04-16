@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TimeTrackingWebAPI.DTO;
 using TimeTrackingWebAPI.Models;
+using TimeTrackingWebAPI.Repositories;
 
 namespace TimeTrackingWebAPI.Controllers
 {
@@ -12,11 +13,35 @@ namespace TimeTrackingWebAPI.Controllers
     [ApiController]
     public class TimeEntriesController : ControllerBase
     {
-        private readonly ITimeTrackingRepository _repository;
+        /// <summary>
+        /// Репозиторий для работы с проводками времени
+        /// </summary>
+        private readonly ITimeEntryRepository _timeEntryRepository;
 
-        public TimeEntriesController(ITimeTrackingRepository repository)
+        /// <summary>
+        /// Репозиторий для работы с задачами
+        /// </summary>
+        private readonly ITaskRepository _taskRepository;
+
+        /// <summary>
+        /// Репозиторий для работы с проектами
+        /// </summary>
+        private readonly IProjectRepository _projectRepository;
+
+        /// <summary>
+        /// Конструктор контроллера проводок
+        /// </summary>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
+        /// <param name="taskRepository">Репозиторий задач</param>
+        /// <param name="projectRepository">Репозиторий проектов</param>
+        public TimeEntriesController(
+            ITimeEntryRepository timeEntryRepository,
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository)
         {
-            _repository = repository;
+            _timeEntryRepository = timeEntryRepository;
+            _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
         }
 
         /// <summary>
@@ -32,7 +57,7 @@ namespace TimeTrackingWebAPI.Controllers
             [FromQuery] DateTime? toDate = null,
             [FromQuery] int? taskId = null)
         {
-            var entries = _repository.GetTimeEntries(fromDate, toDate, taskId);
+            var entries = _timeEntryRepository.GetTimeEntries(fromDate, toDate, taskId);
 
             return entries.Select(e => new TimeEntryResponseDto
             {
@@ -41,9 +66,12 @@ namespace TimeTrackingWebAPI.Controllers
                 Hours = e.Hours,
                 Description = e.Description,
                 TaskId = e.TaskId,
-                TaskName = _repository.GetTaskById(e.TaskId)?.Name ?? string.Empty,
-                ProjectName = _repository.GetProjectById(_repository.GetTaskById(e.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
-                CanEditTask = _repository.GetTaskById(e.TaskId)?.IsActive ?? false
+                TaskName = _taskRepository
+                    .GetTaskById(e.TaskId)?.Name ?? string.Empty,
+                ProjectName = _projectRepository
+                    .GetProjectById(_taskRepository
+                        .GetTaskById(e.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
+                CanEditTask = _taskRepository.GetTaskById(e.TaskId)?.IsActive ?? false
             });
         }
 
@@ -55,7 +83,7 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpGet("{id}", Name = "GetTimeEntry")]
         public IActionResult GetTimeEntry(int id)
         {
-            var entry = _repository.GetTimeEntryById(id);
+            var entry = _timeEntryRepository.GetTimeEntryById(id);
 
             if (entry == null)
             {
@@ -69,9 +97,12 @@ namespace TimeTrackingWebAPI.Controllers
                 Hours = entry.Hours,
                 Description = entry.Description,
                 TaskId = entry.TaskId,
-                TaskName = _repository.GetTaskById(entry.TaskId)?.Name ?? string.Empty,
-                ProjectName = _repository.GetProjectById(_repository.GetTaskById(entry.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
-                CanEditTask = _repository.GetTaskById(entry.TaskId)?.IsActive ?? false
+                TaskName = _taskRepository
+                    .GetTaskById(entry.TaskId)?.Name ?? string.Empty,
+                ProjectName = _projectRepository
+                    .GetProjectById(_taskRepository
+                        .GetTaskById(entry.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
+                CanEditTask = _taskRepository.GetTaskById(entry.TaskId)?.IsActive ?? false
             });
         }
 
@@ -81,7 +112,8 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="entryDto">Данные проводки</param>
         /// <returns>Созданная проводка</returns>
         [HttpPost]
-        public IActionResult CreateTimeEntry([FromBody] TimeEntryRequestDto entryDto)
+        public IActionResult CreateTimeEntry(
+            [FromBody] TimeEntryRequestDto entryDto)
         {
             if (entryDto == null)
             {
@@ -89,7 +121,7 @@ namespace TimeTrackingWebAPI.Controllers
             }
 
             // Проверка существования и активности задачи
-            var task = _repository.GetTaskById(entryDto.TaskId);
+            var task = _taskRepository.GetTaskById(entryDto.TaskId);
             if (task == null)
             {
                 return BadRequest($"Задача с ID {entryDto.TaskId} не найдена");
@@ -101,7 +133,7 @@ namespace TimeTrackingWebAPI.Controllers
             }
 
             // Проверка лимита часов за день
-            var dailyHours = _repository.GetDailyHoursSum(entryDto.Date, null);
+            var dailyHours = _timeEntryRepository.GetDailyHoursSum(entryDto.Date, null);
             if (dailyHours + entryDto.Hours > 24)
             {
                 return BadRequest("Суммарное количество часов за день не может превышать 24");
@@ -115,7 +147,7 @@ namespace TimeTrackingWebAPI.Controllers
                 TaskId = entryDto.TaskId
             };
 
-            _repository.CreateTimeEntry(timeEntry);
+            _timeEntryRepository.CreateTimeEntry(timeEntry);
 
             return CreatedAtRoute("GetTimeEntry", new { id = timeEntry.Id }, timeEntry);
         }
@@ -127,36 +159,40 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="entryDto">Новые данные проводки</param>
         /// <returns>Результат обновления</returns>
         [HttpPut("{id}")]
-        public IActionResult UpdateTimeEntry(int id, [FromBody] TimeEntryUpdateDto entryDto)
+        public IActionResult UpdateTimeEntry(int id,
+            [FromBody] TimeEntryUpdateDto entryDto)
         {
             if (entryDto == null)
             {
                 return BadRequest();
             }
 
-            var existingEntry = _repository.GetTimeEntryById(id);
+            var existingEntry = _timeEntryRepository.GetTimeEntryById(id);
             if (existingEntry == null)
             {
                 return NotFound();
             }
 
             // Проверка: можно ли редактировать (задача должна быть активна)
-            if (!_repository.CanEditTaskInTimeEntry(id))
+            if (!_taskRepository.CanEditTaskInTimeEntry(id))
             {
-                return BadRequest("Нельзя редактировать проводку, так как задача стала неактивной");
+                return BadRequest(
+                    "Нельзя редактировать проводку, так как задача стала неактивной");
             }
 
             // Проверка лимита часов за день (исключая текущую проводку)
-            var dailyHours = _repository.GetDailyHoursSum(existingEntry.Date, id);
+            var dailyHours = _timeEntryRepository
+                .GetDailyHoursSum(existingEntry.Date, id);
             if (dailyHours + entryDto.Hours > 24)
             {
-                return BadRequest("Суммарное количество часов за день не может превышать 24");
+                return BadRequest(
+                    "Суммарное количество часов за день не может превышать 24");
             }
 
             existingEntry.Hours = entryDto.Hours;
             existingEntry.Description = entryDto.Description;
 
-            _repository.UpdateTimeEntry(existingEntry);
+            _timeEntryRepository.UpdateTimeEntry(existingEntry);
 
             return NoContent();
         }
@@ -169,7 +205,7 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteTimeEntry(int id)
         {
-            var deletedEntry = _repository.DeleteTimeEntry(id);
+            var deletedEntry = _timeEntryRepository.DeleteTimeEntry(id);
 
             if (deletedEntry == null)
             {

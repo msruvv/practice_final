@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTrackingWebAPI.DTO;
 using TimeTrackingWebAPI.Models;
+using TimeTrackingWebAPI.Repositories;
 
 namespace TimeTrackingWebAPI.Controllers
 {
@@ -11,11 +12,35 @@ namespace TimeTrackingWebAPI.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
-        private readonly ITimeTrackingRepository _repository;
+        /// <summary>
+        /// Репозиторий для работы с проводками времени
+        /// </summary>
+        private readonly ITimeEntryRepository _timeEntryRepository;
 
-        public TasksController(ITimeTrackingRepository repository)
+        /// <summary>
+        /// Репозиторий для работы с задачами
+        /// </summary>
+        private readonly ITaskRepository _taskRepository;
+
+        /// <summary>
+        /// Репозиторий для работы с проектами
+        /// </summary>
+        private readonly IProjectRepository _projectRepository;
+
+        /// <summary>
+        /// Конструктор контроллера задач
+        /// </summary>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
+        /// <param name="taskRepository">Репозиторий задач</param>
+        /// <param name="projectRepository">Репозиторий проектов</param>
+        public TasksController(
+            ITimeEntryRepository timeEntryRepository,
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository)
         {
-            _repository = repository;
+            _timeEntryRepository = timeEntryRepository;
+            _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
         }
 
         /// <summary>
@@ -25,21 +50,23 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="includeInactive">Включать неактивные</param>
         /// <returns>Список задач</returns>
         [HttpGet]
-        public IEnumerable<TaskResponseDto> GetTasks([FromQuery] int? projectId = null, [FromQuery] bool includeInactive = false)
+        public IEnumerable<TaskResponseDto> GetTasks(
+            [FromQuery] int? projectId = null,
+            [FromQuery] bool includeInactive = false)
         {
-            var tasks = _repository.GetTasks(projectId, includeInactive);
+            var tasks = _taskRepository.GetTasks(projectId, includeInactive);
 
             return tasks.Select(t => new TaskResponseDto
             {
                 Id = t.Id,
                 Name = t.Name,
                 ProjectId = t.ProjectId,
-                ProjectName = _repository
+                ProjectName = _projectRepository
                     .GetProjectById(t.ProjectId)?.Name ?? string.Empty,
                 IsActive = t.IsActive,
-                TotalHoursSpent = _repository
+                TotalHoursSpent = _timeEntryRepository
                     .GetTimeEntries(null, null, t.Id)
-                    .Sum(te => te.Hours)
+                        .Sum(te => te.Hours)
             });
         }
 
@@ -51,7 +78,7 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpGet("{id}", Name = "GetTask")]
         public IActionResult GetTask(int id)
         {
-            var task = _repository.GetTaskById(id);
+            var task = _taskRepository.GetTaskById(id);
 
             if (task == null)
             {
@@ -63,12 +90,11 @@ namespace TimeTrackingWebAPI.Controllers
                 Id = task.Id,
                 Name = task.Name,
                 ProjectId = task.ProjectId,
-                ProjectName = _repository
+                ProjectName = _projectRepository
                     .GetProjectById(task.ProjectId)?.Name ?? string.Empty,
                 IsActive = task.IsActive,
-                TotalHoursSpent = _repository
-                    .GetTimeEntries(null, null, task.Id)
-                    .Sum(te => te.Hours)
+                TotalHoursSpent = _timeEntryRepository
+                    .GetTimeEntries(null, null, task.Id).Sum(te => te.Hours)
             });
         }
 
@@ -86,17 +112,18 @@ namespace TimeTrackingWebAPI.Controllers
             }
 
             // Проверка существования проекта
-            var project = _repository.GetProjectById(taskDto.ProjectId);
+            var project = _projectRepository.GetProjectById(taskDto.ProjectId);
             if (project == null)
             {
                 return BadRequest($"Проект с ID {taskDto.ProjectId} не найден");
             }
 
             // Проверка уникальности названия задачи в проекте
-            var existingTasks = _repository.GetTasks(taskDto.ProjectId, true);
+            var existingTasks = _taskRepository.GetTasks(taskDto.ProjectId, true);
             if (existingTasks.Any(t => t.Name == taskDto.Name))
             {
-                return BadRequest($"Задача с названием '{taskDto.Name}' уже существует в этом проекте");
+                return BadRequest(
+                    $"Задача с названием '{taskDto.Name}' уже существует в проекте");
             }
 
             var task = new Models.Task
@@ -106,9 +133,9 @@ namespace TimeTrackingWebAPI.Controllers
                 IsActive = taskDto.IsActive
             };
 
-            _repository.CreateTask(task);
+            _taskRepository.CreateTask(task);
 
-            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
+            return CreatedAtRoute("GetTask",new { id = task.Id }, task);
         }
 
         /// <summary>
@@ -118,38 +145,40 @@ namespace TimeTrackingWebAPI.Controllers
         /// <param name="taskDto">Новые данные задачи</param>
         /// <returns>Результат обновления</returns>
         [HttpPut("{id}")]
-        public IActionResult UpdateTask(int id, [FromBody] TaskRequestDto taskDto)
+        public IActionResult UpdateTask(int id,
+            [FromBody] TaskRequestDto taskDto)
         {
             if (taskDto == null)
             {
                 return BadRequest();
             }
 
-            var existingTask = _repository.GetTaskById(id);
+            var existingTask = _taskRepository.GetTaskById(id);
             if (existingTask == null)
             {
                 return NotFound();
             }
 
             // Проверка существования проекта
-            var project = _repository.GetProjectById(taskDto.ProjectId);
+            var project = _projectRepository.GetProjectById(taskDto.ProjectId);
             if (project == null)
             {
                 return BadRequest($"Проект с ID {taskDto.ProjectId} не найден");
             }
 
             // Проверка уникальности названия
-            var allTasks = _repository.GetTasks(taskDto.ProjectId, true);
+            var allTasks = _taskRepository.GetTasks(taskDto.ProjectId, true);
             if (allTasks.Any(t => t.Name == taskDto.Name && t.Id != id))
             {
-                return BadRequest($"Задача с названием '{taskDto.Name}' уже существует в этом проекте");
+                return BadRequest(
+                    $"Задача с названием '{taskDto.Name}' уже существует в этом проекте");
             }
 
             existingTask.Name = taskDto.Name;
             existingTask.ProjectId = taskDto.ProjectId;
             existingTask.IsActive = taskDto.IsActive;
 
-            _repository.UpdateTask(existingTask);
+            _taskRepository.UpdateTask(existingTask);
 
             return NoContent();
         }
@@ -164,7 +193,7 @@ namespace TimeTrackingWebAPI.Controllers
         {
             try
             {
-                var deletedTask = _repository.DeleteTask(id);
+                var deletedTask = _taskRepository.DeleteTask(id);
 
                 if (deletedTask == null)
                 {

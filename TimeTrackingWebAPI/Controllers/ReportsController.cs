@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTrackingWebAPI.DTO;
+using TimeTrackingWebAPI.Repositories;
 
 namespace TimeTrackingWebAPI.Controllers
 {
@@ -10,11 +11,70 @@ namespace TimeTrackingWebAPI.Controllers
     [ApiController]
     public class ReportsController : ControllerBase
     {
-        private readonly ITimeTrackingRepository _repository;
+        /// <summary>
+        /// Норма рабочих часов в день
+        /// </summary>
+        private const int DailyNormHours = 8;
 
-        public ReportsController(ITimeTrackingRepository repository)
+        /// <summary>
+        /// Минимальный допустимый год
+        /// </summary>
+        private const int MinYear = 2000;
+
+        /// <summary>
+        /// Максимальный допустимый год
+        /// </summary>
+        private const int MaxYear = 2100;
+
+        /// <summary>
+        /// Минимальный номер месяца
+        /// </summary>
+        private const int MinMonth = 1;
+
+        /// <summary>
+        /// Максимальный номер месяца
+        /// </summary>
+        private const int MaxMonth = 12;
+
+        /// <summary>
+        /// Количество дней в неделе
+        /// </summary>
+        private const int DaysInWeek = 7;
+
+        /// <summary>
+        /// Количество месяцев для добавления
+        /// </summary>
+        private const int MonthsToAdd = 1;
+
+        /// <summary>
+        /// Репозиторий для работы с проводками
+        /// </summary>
+        private readonly ITimeEntryRepository _timeEntryRepository;
+
+        /// <summary>
+        /// Репозиторий для работы с задачами
+        /// </summary>
+        private readonly ITaskRepository _taskRepository;
+
+        /// <summary>
+        /// Репозиторий для работы с проектами
+        /// </summary>
+        private readonly IProjectRepository _projectRepository;
+
+        /// <summary>
+        /// Конструктор контроллера отчетов
+        /// </summary>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
+        /// <param name="taskRepository">Репозиторий задач</param>
+        /// <param name="projectRepository">Репозиторий проектов</param>
+        public ReportsController(
+            ITimeEntryRepository timeEntryRepository,
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository)
         {
-            _repository = repository;
+            _timeEntryRepository = timeEntryRepository;
+            _taskRepository = taskRepository;
+            _projectRepository = projectRepository;
         }
 
         /// <summary>
@@ -25,29 +85,29 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpGet("day")]
         public IActionResult GetDayReport([FromQuery] DateTime date)
         {
-            // Проверка на дневную норму
-            var entries = _repository.GetTimeEntries(date, date.AddDays(1), null);
+            var entries = _timeEntryRepository
+                .GetTimeEntries(date, date.AddDays(1), null);
             var totalHours = entries.Sum(e => e.Hours);
 
             string status, stickerColor, message;
 
-            if (totalHours < 8)
+            if (totalHours < DailyNormHours)
             {
                 status = "under";
                 stickerColor = "yellow";
-                message = $"Внесено недостаточно часов";
+                message = "Внесено недостаточно часов";
             }
-            else if (totalHours == 8)
+            else if (totalHours == DailyNormHours)
             {
                 status = "normal";
                 stickerColor = "green";
-                message = $"Норма часов выполнена!";
+                message = "Норма часов выполнена!";
             }
             else
             {
                 status = "over";
                 stickerColor = "red";
-                message = $"Переработка!";
+                message = "Переработка!";
             }
 
             var report = new TimeEntryReportDto
@@ -64,17 +124,13 @@ namespace TimeTrackingWebAPI.Controllers
                     Hours = e.Hours,
                     Description = e.Description,
                     TaskId = e.TaskId,
-                    TaskName = _repository
-                        .GetTaskById(e.TaskId)?
-                            .Name ?? string.Empty,
-                    ProjectName = _repository
-                        .GetProjectById(_repository
-                            .GetTaskById(e.TaskId)?
-                                .ProjectId ?? 0)?
-                                    .Name ?? string.Empty,
-                    CanEditTask = _repository
-                        .GetTaskById(e.TaskId)?
-                            .IsActive ?? false
+                    TaskName = _taskRepository
+                        .GetTaskById(e.TaskId)?.Name ?? string.Empty,
+                    ProjectName = _projectRepository.GetProjectById(
+                        _taskRepository.GetTaskById(
+                            e.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
+                    CanEditTask = _taskRepository
+                        .GetTaskById(e.TaskId)?.IsActive ?? false
                 }).ToList()
             };
 
@@ -91,9 +147,10 @@ namespace TimeTrackingWebAPI.Controllers
         {
             var startOfWeek = date.Date
                 .AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
-            var endOfWeek = startOfWeek.AddDays(7);
+            var endOfWeek = startOfWeek.AddDays(DaysInWeek);
 
-            var entries = _repository.GetTimeEntries(startOfWeek, endOfWeek, null);
+            var entries = _timeEntryRepository
+                .GetTimeEntries(startOfWeek, endOfWeek, null);
 
             var result = entries.Select(e => new TimeEntryResponseDto
             {
@@ -102,17 +159,13 @@ namespace TimeTrackingWebAPI.Controllers
                 Hours = e.Hours,
                 Description = e.Description,
                 TaskId = e.TaskId,
-                TaskName = _repository
-                    .GetTaskById(e.TaskId)?
-                        .Name ?? string.Empty,
-                ProjectName = _repository
-                    .GetProjectById(_repository
-                        .GetTaskById(e.TaskId)?
-                            .ProjectId ?? 0)?
-                                .Name ?? string.Empty,
-                CanEditTask = _repository
-                    .GetTaskById(e.TaskId)?
-                        .IsActive ?? false
+                TaskName = _taskRepository
+                    .GetTaskById(e.TaskId)?.Name ?? string.Empty,
+                ProjectName = _projectRepository.GetProjectById(
+                    _taskRepository.GetTaskById(
+                        e.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
+                CanEditTask = _taskRepository
+                    .GetTaskById(e.TaskId)?.IsActive ?? false
             }).ToList();
 
             return Ok(result);
@@ -127,15 +180,15 @@ namespace TimeTrackingWebAPI.Controllers
         [HttpGet("month")]
         public IActionResult GetMonthReport([FromQuery] int year, [FromQuery] int month)
         {
-            if (year < 2000 || year > 2100 || month < 1 || month > 12)
+            if (year < MinYear || year > MaxYear || month < MinMonth || month > MaxMonth)
             {
                 return BadRequest("Некорректные параметры года или месяца");
             }
 
             var startDate = new DateTime(year, month, 1);
-            var endDate = startDate.AddMonths(1);
+            var endDate = startDate.AddMonths(MonthsToAdd);
 
-            var entries = _repository.GetTimeEntries(startDate, endDate, null);
+            var entries = _timeEntryRepository.GetTimeEntries(startDate, endDate, null);
 
             var result = entries.Select(e => new TimeEntryResponseDto
             {
@@ -144,17 +197,13 @@ namespace TimeTrackingWebAPI.Controllers
                 Hours = e.Hours,
                 Description = e.Description,
                 TaskId = e.TaskId,
-                TaskName = _repository
-                        .GetTaskById(e.TaskId)?
-                            .Name ?? string.Empty,
-                ProjectName = _repository
-                        .GetProjectById(_repository
-                            .GetTaskById(e.TaskId)?
-                                .ProjectId ?? 0)?
-                                    .Name ?? string.Empty,
-                CanEditTask = _repository
-                        .GetTaskById(e.TaskId)?
-                            .IsActive ?? false
+                TaskName = _taskRepository
+                    .GetTaskById(e.TaskId)?.Name ?? string.Empty,
+                ProjectName = _projectRepository.GetProjectById(
+                    _taskRepository.GetTaskById(
+                        e.TaskId)?.ProjectId ?? 0)?.Name ?? string.Empty,
+                CanEditTask = _taskRepository
+                    .GetTaskById(e.TaskId)?.IsActive ?? false
             }).ToList();
 
             return Ok(result);
