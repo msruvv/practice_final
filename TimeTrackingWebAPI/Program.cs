@@ -9,18 +9,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Настройка DbContext
+/// <summary>
+/// Настройка подключения к базе данных
+/// </summary>
 builder.Services.AddDbContext<TimeTrackingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Регистрация репозиториев
+/// <summary>
+/// Регистрация репозиториев в DI контейнере
+/// </summary>
 builder.Services.AddScoped<IProjectRepository, EFProjectRepository>();
 builder.Services.AddScoped<ITaskRepository, EFTaskRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, EFTimeEntryRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+/// <summary>
+/// Настройка конвейера обработки HTTP запросов
+/// </summary>
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

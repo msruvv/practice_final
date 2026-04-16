@@ -4,6 +4,9 @@ using TimeTrackingWebAPI.Models;
 
 namespace TimeTrackingWebAPI.Services
 {
+    /// <summary>
+    /// Сервис для работы с учетом рабочего времени
+    /// </summary>
     public class TimeTrackingService : ITimeTrackingService
     {
         /// <summary>
@@ -26,15 +29,22 @@ namespace TimeTrackingWebAPI.Services
         /// </summary>
         private const int MonthsToAdd = 1;
 
+        /// <summary>
+        /// Контекст базы данных
+        /// </summary>
         private readonly TimeTrackingDbContext _context;
 
+        /// <summary>
+        /// Конструктор сервиса
+        /// </summary>
+        /// <param name="context">Контекст базы данных</param>
         public TimeTrackingService(TimeTrackingDbContext context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Проверяет, не превысит ли добавление/обновление проводки лимит в 24 часа за день
+        /// Проверяет, не превысит ли добавление/обновление проводки лимит за день
         /// </summary>
         /// <param name="taskId">ID задачи</param>
         /// <param name="date">Дата проводки</param>
