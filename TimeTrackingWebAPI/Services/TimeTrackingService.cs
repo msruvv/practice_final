@@ -6,6 +6,26 @@ namespace TimeTrackingWebAPI.Services
 {
     public class TimeTrackingService : ITimeTrackingService
     {
+        /// <summary>
+        /// Количество часов в дне
+        /// </summary>
+        private const int HoursInDay = 24;
+
+        /// <summary>
+        /// Норма рабочих часов в день
+        /// </summary>
+        private const int DailyNormHours = 8;
+
+        /// <summary>
+        /// Количество дней в неделе
+        /// </summary>
+        private const int DaysInWeek = 7;
+
+        /// <summary>
+        /// Количество месяцев для добавления
+        /// </summary>
+        private const int MonthsToAdd = 1;
+
         private readonly TimeTrackingDbContext _context;
 
         public TimeTrackingService(TimeTrackingDbContext context)
@@ -21,7 +41,8 @@ namespace TimeTrackingWebAPI.Services
         /// <param name="hours">Количество часов</param>
         /// <param name="excludeEntryId">ID проводки для исключения</param>
         /// <returns>True - лимит не превышен, False - лимит будет превышен</returns>
-        public async Task<bool> ValidateDailyHoursLimitAsync(int taskId, DateTime date, decimal hours, int? excludeEntryId = null)
+        public async Task<bool> ValidateDailyHoursLimitAsync(
+            int taskId, DateTime date, decimal hours, int? excludeEntryId = null)
         {
             var query = _context.TimeEntries
                 .Where(te => te.Date.Date == date.Date);
@@ -33,7 +54,7 @@ namespace TimeTrackingWebAPI.Services
 
             var existingTotal = await query.SumAsync(te => te.Hours);
 
-            return existingTotal + hours <= 24;
+            return existingTotal + hours <= HoursInDay;
         }
 
         /// <summary>
@@ -70,14 +91,14 @@ namespace TimeTrackingWebAPI.Services
                 .ToListAsync();
 
             var totalHours = entries.Sum(e => e.Hours);
-            var status = totalHours < 8
+            var status = totalHours < DailyNormHours
                 ? "under"
-                : (totalHours == 8
+                : (totalHours == DailyNormHours
                     ? "normal"
                     : "over");
-            var stickerColor = totalHours < 8
+            var stickerColor = totalHours < DailyNormHours
                 ? "yellow"
-                : (totalHours == 8
+                : (totalHours == DailyNormHours
                     ? "green"
                     : "red");
 
@@ -99,7 +120,7 @@ namespace TimeTrackingWebAPI.Services
         public async Task<List<TimeEntryResponseDto>> GetReportForWeekAsync(DateTime date)
         {
             var startOfWeek = date.Date.AddDays(-(int)date.DayOfWeek + (int)DayOfWeek.Monday);
-            var endOfWeek = startOfWeek.AddDays(7);
+            var endOfWeek = startOfWeek.AddDays(DaysInWeek);
 
             var entries = await _context.TimeEntries
                 .Include(te => te.Task)
@@ -120,7 +141,7 @@ namespace TimeTrackingWebAPI.Services
         public async Task<List<TimeEntryResponseDto>> GetReportForMonthAsync(int year, int month)
         {
             var startDate = new DateTime(year, month, 1);
-            var endDate = startDate.AddMonths(1);
+            var endDate = startDate.AddMonths(MonthsToAdd);
 
             var entries = await _context.TimeEntries
                 .Include(te => te.Task)

@@ -14,6 +14,11 @@ namespace TimeTrackingWebAPI.Controllers
     public class TimeEntriesController : ControllerBase
     {
         /// <summary>
+        /// Количество часов в дне
+        /// </summary>
+        private const int HoursInDay = 24;
+
+        /// <summary>
         /// Репозиторий для работы с проводками времени
         /// </summary>
         private readonly ITimeEntryRepository _timeEntryRepository;
@@ -134,9 +139,9 @@ namespace TimeTrackingWebAPI.Controllers
 
             // Проверка лимита часов за день
             var dailyHours = _timeEntryRepository.GetDailyHoursSum(entryDto.Date, null);
-            if (dailyHours + entryDto.Hours > 24)
+            if (dailyHours + entryDto.Hours > HoursInDay)
             {
-                return BadRequest("Суммарное количество часов за день не может превышать 24");
+                return BadRequest("Суммарное количество часов за день превышает лимит!");
             }
 
             var timeEntry = new TimeEntry
@@ -183,10 +188,10 @@ namespace TimeTrackingWebAPI.Controllers
             // Проверка лимита часов за день (исключая текущую проводку)
             var dailyHours = _timeEntryRepository
                 .GetDailyHoursSum(existingEntry.Date, id);
-            if (dailyHours + entryDto.Hours > 24)
+            if (dailyHours + entryDto.Hours > HoursInDay)
             {
                 return BadRequest(
-                    "Суммарное количество часов за день не может превышать 24");
+                    "Суммарное количество часов за день превышает лимит!");
             }
 
             existingEntry.Hours = entryDto.Hours;

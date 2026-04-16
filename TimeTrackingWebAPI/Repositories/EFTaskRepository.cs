@@ -85,7 +85,8 @@ namespace TimeTrackingWebAPI.Repositories
             {
                 var hasEntries = _context.TimeEntries.Any(te => te.TaskId == id);
                 if (hasEntries)
-                    throw new InvalidOperationException("Нельзя удалить задачу, по которой есть списанные часы");
+                    throw new InvalidOperationException(
+                        "Нельзя удалить задачу, по которой есть списанные часы");
 
                 _context.Tasks.Remove(task);
                 _context.SaveChanges();
