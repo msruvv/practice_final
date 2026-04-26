@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeTrackingApp - Учет рабочего времени</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <nav>
+            <button @click="activeTab = 'projects'" :class="{ active: activeTab === 'projects' }">Проекты</button>
+            <button @click="activeTab = 'tasks'" :class="{ active: activeTab === 'tasks' }">Задачи</button>
+            <button @click="activeTab = 'entries'" :class="{ active: activeTab === 'entries' }">Проводки</button>
+            <button @click="activeTab = 'reports'" :class="{ active: activeTab === 'reports' }">Отчеты</button>
+        </nav>
+
+        <main>
+            <projects v-if="activeTab === 'projects'" :api-base="apiBase"></projects>
+            <tasks v-if="activeTab === 'tasks'" :api-base="apiBase"></tasks>
+            <time-entries v-if="activeTab === 'entries'" :api-base="apiBase"></time-entries>
+            <reports v-if="activeTab === 'reports'" :api-base="apiBase"></reports>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="components/Projects.js"></script>
+    <script src="components/Tasks.js"></script>
+    <script src="components/TimeEntries.js"></script>
+    <script src="components/Reports.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

@@ -78,6 +78,14 @@ namespace TimeTrackingWebAPI.Repositories
             var project = GetProjectById(id);
             if (project != null)
             {
+                var hasActiveTasks = _context.Tasks.Any(t => t.ProjectId == id && t.IsActive);
+                if (hasActiveTasks)
+                {
+                    throw new InvalidOperationException(
+                        "Нельзя удалить проект с активными задачами. " +
+                        "Сначала деактивируйте все задачи проекта.");
+                }
+
                 _context.Projects.Remove(project);
                 _context.SaveChanges();
             }
