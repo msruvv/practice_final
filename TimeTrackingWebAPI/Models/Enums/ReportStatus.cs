@@ -1,22 +1,22 @@
 ﻿namespace TimeTrackingWebAPI.Models.Enums
 {
     /// <summary>
-    /// Статус отчета по часам
+    /// Статус отчета по часам.
     /// </summary>
     public enum ReportStatus
     {
         /// <summary>
-        /// Недостаточно часов
+        /// Недостаточно часов.
         /// </summary>
         Under,
         
         /// <summary>
-        /// Достаточно часов
+        /// Достаточно часов.
         /// </summary>
         Normal,
 
         /// <summary>
-        /// Переработка
+        /// Переработка.
         /// </summary>
         Over
     }

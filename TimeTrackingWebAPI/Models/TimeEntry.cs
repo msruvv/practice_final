@@ -1,37 +1,37 @@
 ﻿namespace TimeTrackingWebAPI.Models
 {
     /// <summary>
-    /// Проводка рабочего времени
+    /// Проводка рабочего времени.
     /// </summary>
     public class TimeEntry
     {
         /// <summary>
-        /// Идентификатор проводки
+        /// Идентификатор проводки.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Дата проводки
+        /// Дата проводки.
         /// </summary>
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// Количество часов
+        /// Количество часов.
         /// </summary>
         public decimal Hours { get; set; }
 
         /// <summary>
-        /// Описание работы
+        /// Описание работы.
         /// </summary>
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Идентификатор задачи
+        /// Идентификатор задачи.
         /// </summary>
         public int TaskId { get; set; }
 
         /// <summary>
-        /// Задача проводки
+        /// Задача проводки.
         /// </summary>
         public virtual Task? Task { get; set; }
     }

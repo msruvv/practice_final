@@ -6,68 +6,68 @@ using TimeTrackingWebAPI.Repositories;
 namespace TimeTrackingWebAPI.Controllers
 {
     /// <summary>
-    /// Управление отчетами
+    /// Управление отчетами.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ReportsController : ControllerBase
     {
         /// <summary>
-        /// Норма рабочих часов в день
+        /// Норма рабочих часов в день.
         /// </summary>
         private const int DailyNormHours = 8;
 
         /// <summary>
-        /// Минимальный допустимый год
+        /// Минимальный допустимый год.
         /// </summary>
         private const int MinYear = 2000;
 
         /// <summary>
-        /// Максимальный допустимый год
+        /// Максимальный допустимый год.
         /// </summary>
         private const int MaxYear = 2100;
 
         /// <summary>
-        /// Минимальный номер месяца
+        /// Минимальный номер месяца.
         /// </summary>
         private const int MinMonth = 1;
 
         /// <summary>
-        /// Максимальный номер месяца
+        /// Максимальный номер месяца.
         /// </summary>
         private const int MaxMonth = 12;
 
         /// <summary>
-        /// Количество дней в неделе
+        /// Количество дней в неделе.
         /// </summary>
         private const int DaysInWeek = 7;
 
         /// <summary>
-        /// Количество месяцев для добавления
+        /// Количество месяцев для добавления.
         /// </summary>
         private const int MonthsToAdd = 1;
 
         /// <summary>
-        /// Репозиторий для работы с проводками
+        /// Репозиторий для работы с проводками.
         /// </summary>
         private readonly ITimeEntryRepository _timeEntryRepository;
 
         /// <summary>
-        /// Репозиторий для работы с задачами
+        /// Репозиторий для работы с задачами.
         /// </summary>
         private readonly ITaskRepository _taskRepository;
 
         /// <summary>
-        /// Репозиторий для работы с проектами
+        /// Репозиторий для работы с проектами.
         /// </summary>
         private readonly IProjectRepository _projectRepository;
 
         /// <summary>
-        /// Конструктор контроллера отчетов
+        /// Конструктор контроллера отчетов.
         /// </summary>
-        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
-        /// <param name="taskRepository">Репозиторий задач</param>
-        /// <param name="projectRepository">Репозиторий проектов</param>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени.</param>
+        /// <param name="taskRepository">Репозиторий задач.</param>
+        /// <param name="projectRepository">Репозиторий проектов.</param>
         public ReportsController(
             ITimeEntryRepository timeEntryRepository,
             ITaskRepository taskRepository,
@@ -79,10 +79,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Показывает отчет за день с дневной нормой
+        /// Показывает отчет за день с дневной нормой.
         /// </summary>
-        /// <param name="date">Дата отчета</param>
-        /// <returns>Отчет со стикером</returns>
+        /// <param name="date">Дата отчета.</param>
+        /// <returns>Отчет со стикером.</returns>
         [HttpGet("day")]
         public IActionResult GetDayReport([FromQuery] DateTime date)
         {
@@ -141,10 +141,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Возвращает список проводок за неделю
+        /// Возвращает список проводок за неделю.
         /// </summary>
-        /// <param name="date">Дата в неделе</param>
-        /// <returns>Список проводок</returns>
+        /// <param name="date">Дата в неделе.</param>
+        /// <returns>Список проводок.</returns>
         [HttpGet("week")]
         public IActionResult GetWeekReport([FromQuery] DateTime date)
         {
@@ -175,11 +175,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Возвращает список проводок за месяц
+        /// Возвращает список проводок за месяц.
         /// </summary>
-        /// <param name="year">Год</param>
-        /// <param name="month">Месяц</param>
-        /// <returns>Список проводок</returns>
+        /// <param name="year">Год.</param>
+        /// <param name="month">Месяц.</param>
+        /// <returns>Список проводок.</returns>
         [HttpGet("month")]
         public IActionResult GetMonthReport([FromQuery] int year, [FromQuery] int month)
         {

@@ -1,32 +1,32 @@
 ﻿namespace TimeTrackingWebAPI.Models
 {
     /// <summary>
-    /// Проект компании
+    /// Проект компании.
     /// </summary>
     public class Project
     {
         /// <summary>
-        /// Идентификатор проекта
+        /// Идентификатор проекта.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Название проекта
+        /// Название проекта.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Уникальный код проекта
+        /// Уникальный код проекта.
         /// </summary>
         public string Code { get; set; } = string.Empty;
 
         /// <summary>
-        /// Активность проекта
+        /// Активность проекта.
         /// </summary>
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// Список задач проекта
+        /// Список задач проекта.
         /// </summary>
         public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
     }

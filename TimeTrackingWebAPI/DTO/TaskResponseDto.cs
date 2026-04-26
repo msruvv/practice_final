@@ -1,37 +1,37 @@
 ﻿namespace TimeTrackingWebAPI.DTO
 {
     /// <summary>
-    /// Ответ по задаче
+    /// Ответ по задаче.
     /// </summary>
     public class TaskResponseDto
     {
         /// <summary>
-        /// Идентификатор задачи
+        /// Идентификатор задачи.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Название задачи
+        /// Название задачи.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Идентификатор проекта
+        /// Идентификатор проекта.
         /// </summary>
         public int ProjectId { get; set; }
 
         /// <summary>
-        /// Название проекта
+        /// Название проекта.
         /// </summary>
         public string ProjectName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Статус активности задачи
+        /// Статус активности задачи.
         /// </summary>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Общее количество часов, потраченных на задачу
+        /// Общее количество часов, потраченных на задачу.
         /// </summary>
         public decimal TotalHoursSpent { get; set; }
     }

@@ -4,29 +4,29 @@ using TimeTrackingWebAPI.Models;
 namespace TimeTrackingWebAPI.Repositories
 {
     /// <summary>
-    /// Репозиторий для работы с проектами
+    /// Репозиторий для работы с проектами.
     /// </summary>
     public class EFProjectRepository : IProjectRepository
     {
         /// <summary>
-        /// Контекст базы данных
+        /// Контекст базы данных.
         /// </summary>
         private readonly TimeTrackingDbContext _context;
 
         /// <summary>
-        /// Инициализирует новый экземпляр репозитория проектов
+        /// Инициализирует новый экземпляр репозитория проектов.
         /// </summary>
-        /// <param name="context">Контекст базы данных</param>
+        /// <param name="context">Контекст базы данных.</param>
         public EFProjectRepository(TimeTrackingDbContext context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Возвращает список проектов
+        /// Возвращает список проектов.
         /// </summary>
-        /// <param name="includeInactive">Включать неактивные</param>
-        /// <returns>Список проектов</returns>
+        /// <param name="includeInactive">Включать неактивные.</param>
+        /// <returns>Список проектов.</returns>
         public IEnumerable<Project> GetProjects(bool includeInactive = false)
         {
             var query = _context.Projects.AsQueryable();
@@ -39,19 +39,19 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Возвращает проект по ID
+        /// Возвращает проект по ID.
         /// </summary>
-        /// <param name="id">ID проекта</param>
-        /// <returns>Проект или null</returns>
+        /// <param name="id">ID проекта.</param>
+        /// <returns>Проект или null.</returns>
         public Project? GetProjectById(int id)
         {
             return _context.Projects.Find(id);
         }
 
         /// <summary>
-        /// Создает новый проект
+        /// Создает новый проект.
         /// </summary>
-        /// <param name="project">Данные проекта</param>
+        /// <param name="project">Данные проекта.</param>
         public void CreateProject(Project project)
         {
             _context.Projects.Add(project);
@@ -59,9 +59,9 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Обновляет проект
+        /// Обновляет проект.
         /// </summary>
-        /// <param name="project">Данные проекта</param>
+        /// <param name="project">Данные проекта.</param>
         public void UpdateProject(Project project)
         {
             _context.Projects.Update(project);
@@ -69,10 +69,10 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Удаляет проект
+        /// Удаляет проект.
         /// </summary>
-        /// <param name="id">ID проекта</param>
-        /// <returns>Удаленный проект или null</returns>
+        /// <param name="id">ID проекта.</param>
+        /// <returns>Удаленный проект или null.</returns>
         public Project? DeleteProject(int id)
         {
             var project = GetProjectById(id);

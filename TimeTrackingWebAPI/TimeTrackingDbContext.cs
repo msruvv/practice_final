@@ -4,40 +4,41 @@ using TimeTrackingWebAPI.Models;
 namespace TimeTrackingWebAPI
 {
     /// <summary>
-    /// Контекст базы данных для учета рабочего времени
+    /// Контекст базы данных для учета рабочего времени.
     /// </summary>
     public class TimeTrackingDbContext : DbContext
     {
         /// <summary>
-        /// Конструктор контекста БД
+        /// Конструктор контекста БД.
         /// </summary>
-        /// <param name="options">Настройки контекста</param>
+        /// <param name="options">Настройки контекста.</param>
         public TimeTrackingDbContext(DbContextOptions<TimeTrackingDbContext> options)
             : base(options) { }
 
         /// <summary>
-        /// Проекты
+        /// Проекты.
         /// </summary>
         public DbSet<Project> Projects { get; set; }
 
         /// <summary>
-        /// Задачи
+        /// Задачи.
         /// </summary>
         public DbSet<Models.Task> Tasks { get; set; }
 
         /// <summary>
-        /// Проводки
+        /// Проводки.
         /// </summary>
         public DbSet<TimeEntry> TimeEntries { get; set; }
 
         /// <summary>
-        /// Настройка модели БД
+        /// Настройка модели БД.
         /// </summary>
-        /// <param name="modelBuilder">Строитель модели</param>
+        /// <param name="modelBuilder">Строитель модели.</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // Настройки проектов.
             modelBuilder.Entity<Project>(entity =>
             {
                 entity.Property(p => p.Name)
@@ -57,46 +58,38 @@ namespace TimeTrackingWebAPI
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ==================== НАСТРОЙКИ ЗАДАЧ ====================
+            // Настройки задач.
             modelBuilder.Entity<Models.Task>(entity =>
             {
-                // Ограничения длины
                 entity.Property(t => t.Name)
-                    .IsRequired()           // NOT NULL
-                    .HasMaxLength(200);     // NVARCHAR(200)
+                    .IsRequired()
+                    .HasMaxLength(200);
 
-                // Уникальный индекс по проекту и названию задачи
                 entity.HasIndex(t => new { t.ProjectId, t.Name })
                     .IsUnique();
 
-                // Связь с проектом (каскадное удаление)
                 entity.HasOne(t => t.Project)
                     .WithMany(p => p.Tasks)
                     .HasForeignKey(t => t.ProjectId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ==================== НАСТРОЙКИ ПРОВОДОК ====================
+            // Настройки проводок.
             modelBuilder.Entity<TimeEntry>(entity =>
             {
-                // Ограничения длины
                 entity.Property(te => te.Description)
-                    .HasMaxLength(500);     // NVARCHAR(500)
+                    .HasMaxLength(500);
 
-                // Точность для часов (decimal(5,2))
                 entity.Property(te => te.Hours)
                     .HasPrecision(5, 2);
 
-                // Составной индекс для поиска по дате и задаче
                 entity.HasIndex(te => new { te.Date, te.TaskId });
 
-                // Связь с задачей (каскадное удаление)
                 entity.HasOne(te => te.Task)
                     .WithMany(t => t.TimeEntries)
                     .HasForeignKey(te => te.TaskId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Check-ограничение для часов (0.01 - 24)
                 entity.ToTable(t => t.HasCheckConstraint("CK_Hours", "[Hours] >= 0.01 AND [Hours] <= 24"));
             });
         }

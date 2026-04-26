@@ -4,31 +4,31 @@ using TimeTrackingWebAPI.Models;
 namespace TimeTrackingWebAPI.Repositories
 {
     /// <summary>
-    /// Репозиторий для работы с задачами
+    /// Репозиторий для работы с задачами.
     /// </summary>
     public class EFTimeEntryRepository : ITimeEntryRepository
     {
         /// <summary>
-        /// Контекст базы данных
+        /// Контекст базы данных.
         /// </summary>
         private readonly TimeTrackingDbContext _context;
 
         /// <summary>
         /// Инициализирует новый экземпляр репозитория проектов
         /// </summary>
-        /// <param name="context">Контекст базы данных</param>
+        /// <param name="context">Контекст базы данных.</param>
         public EFTimeEntryRepository(TimeTrackingDbContext context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Возвращает список проводок
+        /// Возвращает список проводок.
         /// </summary>
-        /// <param name="fromDate">Начальная дата</param>
-        /// <param name="toDate">Конечная дата</param>
-        /// <param name="taskId">ID задачи</param>
-        /// <returns>Список проводок</returns>
+        /// <param name="fromDate">Начальная дата.</param>
+        /// <param name="toDate">Конечная дата.</param>
+        /// <param name="taskId">ID задачи.</param>
+        /// <returns>Список проводок.</returns>
         public IEnumerable<TimeEntry> GetTimeEntries(
             DateTime? fromDate = null,
             DateTime? toDate = null,
@@ -55,19 +55,19 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Возвращает проводку по ID
+        /// Возвращает проводку по ID.
         /// </summary>
-        /// <param name="id">ID проводки</param>
-        /// <returns>Проводка или null</returns>
+        /// <param name="id">ID проводки.</param>
+        /// <returns>Проводка или null.</returns>
         public TimeEntry? GetTimeEntryById(int id)
         {
             return _context.TimeEntries.Find(id);
         }
 
         /// <summary>
-        /// Создает новую проводку
+        /// Создает новую проводку.
         /// </summary>
-        /// <param name="timeEntry">Данные проводки</param>
+        /// <param name="timeEntry">Данные проводки.</param>
         public void CreateTimeEntry(TimeEntry timeEntry)
         {
             _context.TimeEntries.Add(timeEntry);
@@ -75,9 +75,9 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Обновляет проводку
+        /// Обновляет проводку.
         /// </summary>
-        /// <param name="timeEntry">Данные проводки</param>
+        /// <param name="timeEntry">Данные проводки.</param>
         public void UpdateTimeEntry(TimeEntry timeEntry)
         {
             _context.TimeEntries.Update(timeEntry);
@@ -85,10 +85,10 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Удаляет проводку
+        /// Удаляет проводку.
         /// </summary>
-        /// <param name="id">ID проводки</param>
-        /// <returns>Удаленная проводка или null</returns>
+        /// <param name="id">ID проводки.</param>
+        /// <returns>Удаленная проводка или null.</returns>
         public TimeEntry? DeleteTimeEntry(int id)
         {
             var timeEntry = GetTimeEntryById(id);
@@ -101,11 +101,11 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Возвращает сумму часов за день
+        /// Возвращает сумму часов за день.
         /// </summary>
-        /// <param name="date">Дата</param>
-        /// <param name="excludeEntryId">ID проводки для исключения</param>
-        /// <returns>Сумма часов</returns>
+        /// <param name="date">Дата.</param>
+        /// <param name="excludeEntryId">ID проводки для исключения.</param>
+        /// <returns>Сумма часов.</returns>
         public decimal GetDailyHoursSum(DateTime date, int? excludeEntryId = null)
         {
             var query = _context.TimeEntries
@@ -120,10 +120,10 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Проверяет, можно ли редактировать задачу в проводке
+        /// Проверяет, можно ли редактировать задачу в проводке.
         /// </summary>
-        /// <param name="timeEntryId">ID проводки</param>
-        /// <returns>True - можно, False - нельзя</returns>
+        /// <param name="timeEntryId">ID проводки.</param>
+        /// <returns>True - можно, False - нельзя.</returns>
         public bool CanEditTaskInTimeEntry(int timeEntryId)
         {
             var isTaskActive = _context.TimeEntries

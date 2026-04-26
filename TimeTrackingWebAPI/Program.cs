@@ -26,13 +26,13 @@ builder.Services.AddCors(options =>
 });
 
 /// <summary>
-/// Настройка подключения к базе данных
+/// Настройка подключения к базе данных.
 /// </summary>
 builder.Services.AddDbContext<TimeTrackingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /// <summary>
-/// Регистрация репозиториев в DI контейнере
+/// Регистрация репозиториев в DI контейнере.
 /// </summary>
 builder.Services.AddScoped<IProjectRepository, EFProjectRepository>();
 builder.Services.AddScoped<ITaskRepository, EFTaskRepository>();
@@ -43,7 +43,7 @@ var app = builder.Build();
 app.UseCors("AllowAll");
 
 /// <summary>
-/// Настройка конвейера обработки HTTP запросов
+/// Настройка конвейера обработки HTTP запросов.
 /// </summary>
 if (app.Environment.IsDevelopment())
 {

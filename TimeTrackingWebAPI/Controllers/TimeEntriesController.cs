@@ -7,38 +7,38 @@ using TimeTrackingWebAPI.Repositories;
 namespace TimeTrackingWebAPI.Controllers
 {
     /// <summary>
-    /// Управление проводками времени
+    /// Управление проводками времени.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TimeEntriesController : ControllerBase
     {
         /// <summary>
-        /// Количество часов в дне
+        /// Количество часов в дне.
         /// </summary>
         private const int HoursInDay = 24;
 
         /// <summary>
-        /// Репозиторий для работы с проводками времени
+        /// Репозиторий для работы с проводками времени.
         /// </summary>
         private readonly ITimeEntryRepository _timeEntryRepository;
 
         /// <summary>
-        /// Репозиторий для работы с задачами
+        /// Репозиторий для работы с задачами.
         /// </summary>
         private readonly ITaskRepository _taskRepository;
 
         /// <summary>
-        /// Репозиторий для работы с проектами
+        /// Репозиторий для работы с проектами.
         /// </summary>
         private readonly IProjectRepository _projectRepository;
 
         /// <summary>
-        /// Конструктор контроллера проводок
+        /// Конструктор контроллера проводок.
         /// </summary>
-        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
-        /// <param name="taskRepository">Репозиторий задач</param>
-        /// <param name="projectRepository">Репозиторий проектов</param>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени.</param>
+        /// <param name="taskRepository">Репозиторий задач.</param>
+        /// <param name="projectRepository">Репозиторий проектов.</param>
         public TimeEntriesController(
             ITimeEntryRepository timeEntryRepository,
             ITaskRepository taskRepository,
@@ -50,12 +50,12 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Показывает список всех проводок
+        /// Показывает список всех проводок.
         /// </summary>
-        /// <param name="fromDate">Начальная дата</param>
-        /// <param name="toDate">Конечная дата</param>
-        /// <param name="taskId">ID задачи</param>
-        /// <returns>Список проводок</returns>
+        /// <param name="fromDate">Начальная дата.</param>
+        /// <param name="toDate">Конечная дата.</param>
+        /// <param name="taskId">ID задачи.</param>
+        /// <returns>Список проводок.</returns>
         [HttpGet]
         public IEnumerable<TimeEntryResponseDto> GetTimeEntries(
             [FromQuery] DateTime? fromDate = null,
@@ -81,10 +81,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Показывает проводку по ID
+        /// Показывает проводку по ID.
         /// </summary>
-        /// <param name="id">ID проводки</param>
-        /// <returns>Данные проводки</returns>
+        /// <param name="id">ID проводки.</param>
+        /// <returns>Данные проводки.</returns>
         [HttpGet("{id}", Name = "GetTimeEntry")]
         public IActionResult GetTimeEntry(int id)
         {
@@ -112,10 +112,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Создает новую проводку
+        /// Создает новую проводку.
         /// </summary>
-        /// <param name="entryDto">Данные проводки</param>
-        /// <returns>Созданная проводка</returns>
+        /// <param name="entryDto">Данные проводки.</param>
+        /// <returns>Созданная проводка.</returns>
         [HttpPost]
         public IActionResult CreateTimeEntry(
             [FromBody] TimeEntryRequestDto entryDto)
@@ -125,7 +125,7 @@ namespace TimeTrackingWebAPI.Controllers
                 return BadRequest();
             }
 
-            // Проверка существования и активности задачи
+            // Проверка существования и активности задачи.
             var task = _taskRepository.GetTaskById(entryDto.TaskId);
             if (task == null)
             {
@@ -137,7 +137,7 @@ namespace TimeTrackingWebAPI.Controllers
                 return BadRequest("Нельзя создать проводку для неактивной задачи");
             }
 
-            // Проверка лимита часов за день
+            // Проверка лимита часов за день.
             var dailyHours = _timeEntryRepository.GetDailyHoursSum(entryDto.Date, null);
             if (dailyHours + entryDto.Hours > HoursInDay)
             {
@@ -158,11 +158,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Обновляет проводку
+        /// Обновляет проводку.
         /// </summary>
-        /// <param name="id">ID проводки</param>
-        /// <param name="entryDto">Новые данные проводки</param>
-        /// <returns>Результат обновления</returns>
+        /// <param name="id">ID проводки.</param>
+        /// <param name="entryDto">Новые данные проводки.</param>
+        /// <returns>Результат обновления.</returns>
         [HttpPut("{id}")]
         public IActionResult UpdateTimeEntry(int id,
             [FromBody] TimeEntryUpdateDto entryDto)
@@ -178,14 +178,14 @@ namespace TimeTrackingWebAPI.Controllers
                 return NotFound();
             }
 
-            // Проверка: можно ли редактировать (задача должна быть активна)
+            // Проверка: можно ли редактировать (задача должна быть активна).
             if (!_taskRepository.CanEditTaskInTimeEntry(id))
             {
                 return BadRequest(
                     "Нельзя редактировать проводку, так как задача стала неактивной");
             }
 
-            // Проверка лимита часов за день (исключая текущую проводку)
+            // Проверка лимита часов за день (исключая текущую проводку).
             var dailyHours = _timeEntryRepository
                 .GetDailyHoursSum(existingEntry.Date, id);
             if (dailyHours + entryDto.Hours > HoursInDay)
@@ -203,10 +203,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Удаляет проводку
+        /// Удаляет проводку.
         /// </summary>
-        /// <param name="id">ID проводки</param>
-        /// <returns>Результат удаления</returns>
+        /// <param name="id">ID проводки.</param>
+        /// <returns>Результат удаления.</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteTimeEntry(int id)
         {

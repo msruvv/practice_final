@@ -6,33 +6,33 @@ using TimeTrackingWebAPI.Repositories;
 namespace TimeTrackingWebAPI.Controllers
 {
     /// <summary>
-    /// Управление задачами проекта
+    /// Управление задачами проекта.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController : ControllerBase
     {
         /// <summary>
-        /// Репозиторий для работы с проводками времени
+        /// Репозиторий для работы с проводками времени.
         /// </summary>
         private readonly ITimeEntryRepository _timeEntryRepository;
 
         /// <summary>
-        /// Репозиторий для работы с задачами
+        /// Репозиторий для работы с задачами.
         /// </summary>
         private readonly ITaskRepository _taskRepository;
 
         /// <summary>
-        /// Репозиторий для работы с проектами
+        /// Репозиторий для работы с проектами.
         /// </summary>
         private readonly IProjectRepository _projectRepository;
 
         /// <summary>
-        /// Конструктор контроллера задач
+        /// Конструктор контроллера задач.
         /// </summary>
-        /// <param name="timeEntryRepository">Репозиторий проводок времени</param>
-        /// <param name="taskRepository">Репозиторий задач</param>
-        /// <param name="projectRepository">Репозиторий проектов</param>
+        /// <param name="timeEntryRepository">Репозиторий проводок времени.</param>
+        /// <param name="taskRepository">Репозиторий задач.</param>
+        /// <param name="projectRepository">Репозиторий проектов.</param>
         public TasksController(
             ITimeEntryRepository timeEntryRepository,
             ITaskRepository taskRepository,
@@ -44,11 +44,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Показывает список всех задач
+        /// Показывает список всех задач.
         /// </summary>
-        /// <param name="projectId">ID проекта</param>
-        /// <param name="includeInactive">Включать неактивные</param>
-        /// <returns>Список задач</returns>
+        /// <param name="projectId">ID проекта.</param>
+        /// <param name="includeInactive">Включать неактивные.</param>
+        /// <returns>Список задач.</returns>
         [HttpGet]
         public IEnumerable<TaskResponseDto> GetTasks(
             [FromQuery] int? projectId = null,
@@ -71,10 +71,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Показывает задачу по ID
+        /// Показывает задачу по ID.
         /// </summary>
-        /// <param name="id">ID задачи</param>
-        /// <returns>Данные задачи</returns>
+        /// <param name="id">ID задачи.</param>
+        /// <returns>Данные задачи.</returns>
         [HttpGet("{id}", Name = "GetTask")]
         public IActionResult GetTask(int id)
         {
@@ -99,10 +99,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Создает новую задачу
+        /// Создает новую задачу.
         /// </summary>
-        /// <param name="taskDto">Данные задачи</param>
-        /// <returns>Созданная задача</returns>
+        /// <param name="taskDto">Данные задачи.</param>
+        /// <returns>Созданная задача.</returns>
         [HttpPost]
         public IActionResult CreateTask([FromBody] TaskRequestDto taskDto)
         {
@@ -111,14 +111,14 @@ namespace TimeTrackingWebAPI.Controllers
                 return BadRequest();
             }
 
-            // Проверка существования проекта
+            // Проверка существования проекта.
             var project = _projectRepository.GetProjectById(taskDto.ProjectId);
             if (project == null)
             {
                 return BadRequest($"Проект с ID {taskDto.ProjectId} не найден");
             }
 
-            // Проверка уникальности названия задачи в проекте
+            // Проверка уникальности названия задачи в проекте.
             var existingTasks = _taskRepository.GetTasks(taskDto.ProjectId, true);
             if (existingTasks.Any(t => t.Name == taskDto.Name))
             {
@@ -139,11 +139,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Обновляет задачу
+        /// Обновляет задачу.
         /// </summary>
         /// <param name="id">ID задачи</param>
-        /// <param name="taskDto">Новые данные задачи</param>
-        /// <returns>Результат обновления</returns>
+        /// <param name="taskDto">Новые данные задачи.</param>
+        /// <returns>Результат обновления.</returns>
         [HttpPut("{id}")]
         public IActionResult UpdateTask(int id,
             [FromBody] TaskRequestDto taskDto)
@@ -159,14 +159,14 @@ namespace TimeTrackingWebAPI.Controllers
                 return NotFound();
             }
 
-            // Проверка существования проекта
+            // Проверка существования проекта.
             var project = _projectRepository.GetProjectById(taskDto.ProjectId);
             if (project == null)
             {
                 return BadRequest($"Проект с ID {taskDto.ProjectId} не найден");
             }
 
-            // Проверка уникальности названия
+            // Проверка уникальности названия.
             var allTasks = _taskRepository.GetTasks(taskDto.ProjectId, true);
             if (allTasks.Any(t => t.Name == taskDto.Name && t.Id != id))
             {
@@ -184,10 +184,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Удаляет задачу
+        /// Удаляет задачу.
         /// </summary>
-        /// <param name="id">ID задачи</param>
-        /// <returns>Результат удаления</returns>
+        /// <param name="id">ID задачи.</param>
+        /// <returns>Результат удаления.</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteTask(int id)
         {

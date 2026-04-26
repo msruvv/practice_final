@@ -6,27 +6,27 @@ using TimeTrackingWebAPI.Repositories;
 namespace TimeTrackingWebAPI.Controllers
 {
     /// <summary>
-    /// Управление проектами
+    /// Управление проектами.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ProjectsController : ControllerBase
     {
         /// <summary>
-        /// Репозиторий для работы с задачами
+        /// Репозиторий для работы с задачами.
         /// </summary>
         private readonly ITaskRepository _taskRepository;
 
         /// <summary>
-        /// Репозиторий для работы с проектами
+        /// Репозиторий для работы с проектами.
         /// </summary>
         private readonly IProjectRepository _projectRepository;
 
         /// <summary>
-        /// Конструктор контроллера проектов
+        /// Конструктор контроллера проектов.
         /// </summary>
-        /// <param name="taskRepository">Репозиторий задач</param>
-        /// <param name="projectRepository">Репозиторий проектов</param>
+        /// <param name="taskRepository">Репозиторий задач.</param>
+        /// <param name="projectRepository">Репозиторий проектов.</param>
         public ProjectsController(
             ITaskRepository taskRepository,
             IProjectRepository projectRepository)
@@ -36,10 +36,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Возвращает список всех проектов
+        /// Возвращает список всех проектов.
         /// </summary>
-        /// <param name="includeInactive">Включать неактивные</param>
-        /// <returns>Список проектов</returns>
+        /// <param name="includeInactive">Включать неактивные.</param>
+        /// <returns>Список проектов.</returns>
         [HttpGet]
         public IEnumerable<ProjectResponseDto> GetProjects(
             [FromQuery] bool includeInactive = false)
@@ -57,10 +57,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Получает проект по ID
+        /// Получает проект по ID.
         /// </summary>
-        /// <param name="id">ID проекта</param>
-        /// <returns>Данные проекта</returns>
+        /// <param name="id">ID проекта.</param>
+        /// <returns>Данные проекта.</returns>
         [HttpGet("{id}", Name = "GetProject")]
         public IActionResult GetProject(int id)
         {
@@ -80,10 +80,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Создает новый проект
+        /// Создает новый проект.
         /// </summary>
-        /// <param name="projectDto">Данные проекта</param>
-        /// <returns>Созданный проект</returns>
+        /// <param name="projectDto">Данные проекта.</param>
+        /// <returns>Созданный проект.</returns>
         [HttpPost]
         public IActionResult CreateProject(
             [FromBody] ProjectRequestDto projectDto)
@@ -91,7 +91,7 @@ namespace TimeTrackingWebAPI.Controllers
             if (projectDto == null)
                 return BadRequest();
 
-            // Проверка уникальности кода
+            // Проверка уникальности кода.
             var existingProjects = _projectRepository.GetProjects(true);
             if (existingProjects.Any(p => p.Code == projectDto.Code))
                 return BadRequest(
@@ -111,11 +111,11 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Обновляет проект
+        /// Обновляет проект.
         /// </summary>
-        /// <param name="id">ID проекта</param>
-        /// <param name="projectDto">Новые данные проекта</param>
-        /// <returns>Результат обновления</returns>
+        /// <param name="id">ID проекта.</param>
+        /// <param name="projectDto">Новые данные проекта.</param>
+        /// <returns>Результат обновления.</returns>
         [HttpPut("{id}")]
         public IActionResult UpdateProject(int id, 
             [FromBody] ProjectRequestDto projectDto)
@@ -127,7 +127,7 @@ namespace TimeTrackingWebAPI.Controllers
             if (existingProject == null)
                 return NotFound();
 
-            // Проверка уникальности кода
+            // Проверка уникальности кода.
             var allProjects = _projectRepository.GetProjects(true);
             if (allProjects.Any(p => p.Code == projectDto.Code && p.Id != id))
                 return BadRequest(
@@ -143,10 +143,10 @@ namespace TimeTrackingWebAPI.Controllers
         }
 
         /// <summary>
-        /// Удаляет проект
+        /// Удаляет проект.
         /// </summary>
-        /// <param name="id">ID проекта</param>
-        /// <returns>Результат удаления</returns>
+        /// <param name="id">ID проекта.</param>
+        /// <returns>Результат удаления.</returns>
         [HttpDelete("{id}")]
         public IActionResult DeleteProject(int id)
         {

@@ -3,30 +3,30 @@
 namespace TimeTrackingWebAPI.Repositories
 {
     /// <summary>
-    /// Репозиторий для работы с задачами
+    /// Репозиторий для работы с задачами.
     /// </summary>
     public class EFTaskRepository : ITaskRepository
     {
         /// <summary>
-        /// Контекст базы данных
+        /// Контекст базы данных.
         /// </summary>
         private readonly TimeTrackingDbContext _context;
 
         /// <summary>
-        /// Инициализирует новый экземпляр репозитория проектов
+        /// Инициализирует новый экземпляр репозитория проектов.
         /// </summary>
-        /// <param name="context">Контекст базы данных</param>
+        /// <param name="context">Контекст базы данных.</param>
         public EFTaskRepository(TimeTrackingDbContext context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Возвращает список задач
+        /// Возвращает список задач.
         /// </summary>
-        /// <param name="projectId">ID проекта (опционально)</param>
-        /// <param name="includeInactive">Включать неактивные</param>
-        /// <returns>Список задач</returns>
+        /// <param name="projectId">ID проекта (опционально).</param>
+        /// <param name="includeInactive">Включать неактивные.</param>
+        /// <returns>Список задач.</returns>
         public IEnumerable<Models.Task> GetTasks(
             int? projectId = null,
             bool includeInactive = false)
@@ -43,19 +43,19 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Возвращает задачу по ID
+        /// Возвращает задачу по ID.
         /// </summary>
-        /// <param name="id">ID задачи</param>
-        /// <returns>Задача или null</returns>
+        /// <param name="id">ID задачи.</param>
+        /// <returns>Задача или null.</returns>
         public Models.Task? GetTaskById(int id)
         {
             return _context.Tasks.Find(id);
         }
 
         /// <summary>
-        /// Создает новую задачу
+        /// Создает новую задачу.
         /// </summary>
-        /// <param name="task">Данные задачи</param>
+        /// <param name="task">Данные задачи.</param>
         public void CreateTask(Models.Task task)
         {
             _context.Tasks.Add(task);
@@ -63,9 +63,9 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Обновляет задачу
+        /// Обновляет задачу.
         /// </summary>
-        /// <param name="task">Данные задачи</param>
+        /// <param name="task">Данные задачи.</param>
         public void UpdateTask(Models.Task task)
         {
             _context.Tasks.Update(task);
@@ -73,11 +73,11 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Удаляет задачу
+        /// Удаляет задачу.
         /// </summary>
-        /// <param name="id">ID задачи</param>
-        /// <returns>Удаленная задача или null</returns>
-        /// <exception cref="InvalidOperationException">Если есть проводки по задаче</exception>
+        /// <param name="id">ID задачи.</param>
+        /// <returns>Удаленная задача или null.</returns>
+        /// <exception cref="InvalidOperationException">Если есть проводки по задаче.</exception>
         public Models.Task? DeleteTask(int id)
         {
             var task = GetTaskById(id);
@@ -96,10 +96,10 @@ namespace TimeTrackingWebAPI.Repositories
         }
 
         /// <summary>
-        /// Проверяет, можно ли редактировать задачу в проводке
+        /// Проверяет, можно ли редактировать задачу в проводке.
         /// </summary>
-        /// <param name="timeEntryId">ID проводки</param>
-        /// <returns>True - можно, False - нельзя</returns>
+        /// <param name="timeEntryId">ID проводки.</param>
+        /// <returns>True - можно, False - нельзя.</returns>
         public bool CanEditTaskInTimeEntry(int timeEntryId)
         {
             var isTaskActive = _context.TimeEntries
